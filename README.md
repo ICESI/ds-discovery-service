@@ -14,7 +14,12 @@ En esta guía se introducen conceptos acerca de la tecnología de descubrimiento
 un ejemplo de como desplegar un ambiente compuesto por microservicios y una tecnología para el descubrimiento de servicio. La información presentada es resultado de la recopilación de distintas fuentes de información, las referencias se presentan al final de la guía.
 
 ### Desarrollo
-Para la realización de esta guía se requiere de 4 máquinas virtuales como muestra el diagrama realizado en clase. Se hará uso del aplicativo screen para la ejecución de comandos en background.
+Para la realización de esta guía se requiere de 4 máquinas virtuales como muestra el diagrama realizado en clase.
+
+![][1]
+**Figura 1.** Esquema básico de descubrimiento de servicios
+
+Se hará uso del aplicativo screen para la ejecución de comandos en background.
 
 #### Servidor de descubrimiento de servicio
 Instalar las dependencias necesarias
@@ -197,3 +202,5 @@ consul members
 
 ### Referencias
 https://www.consul.io/docs/agent/checks.html#TTL
+
+[1]: images/discovery_service.png
