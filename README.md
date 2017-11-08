@@ -75,7 +75,7 @@ python microservice_a.py
 Crear un archivo de configuración para el microservicio con un  healthcheck
 ```
 echo '{"service": {"name": "microservice_a", "tags": ["flask"], "port": 8080,
-  "check": {"script": "curl localhost/health:8080 >/dev/null 2>&1", "interval": "10s"}}}' >/etc/consul.d/microservice_a.json
+  "check": {"script": "curl localhost:8080/health >/dev/null 2>&1", "interval": "10s"}}}' >/etc/consul.d/microservice_a.json
 ```
 
 Iniciar el agente en modo cliente (use una sesión de screen)
