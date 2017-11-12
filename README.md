@@ -93,8 +93,8 @@ firewall-cmd --reload
 
 Crear un archivo de configuración para el microservicio con un  healthcheck
 ```
-echo '{"service": {"name": "microservice_a", "tags": ["flask"], "port": 8080,
-  "check": {"script": "curl localhost:8080/health >/dev/null 2>&1", "interval": "10s"}}}' >/etc/consul.d/microservice_a.json
+echo '{"service": {"name": "microservice-a", "tags": ["flask"], "port": 8080,
+  "check": {"script": "curl localhost:8080/health >/dev/null 2>&1", "interval": "10s"}}}' >/etc/consul.d/microservice-a.json
 ```
 
 Iniciar el agente en modo cliente (use una sesión de screen)
@@ -214,8 +214,8 @@ firewall-cmd --reload
 
 Crear un archivo de configuración para el microservicio con un  healthcheck
 ```
-echo '{"service": {"name": "microservice_b", "tags": ["flask"], "port": 8080,
-  "check": {"script": "curl localhost/health:8080 >/dev/null 2>&1", "interval": "10s"}}}' >/etc/consul.d/microservice_b.json
+echo '{"service": {"name": "microservice-b", "tags": ["flask"], "port": 8080,
+  "check": {"script": "curl localhost/health:8080 >/dev/null 2>&1", "interval": "10s"}}}' >/etc/consul.d/microservice-b.json
 ```
 
 Iniciar el agente en modo cliente (use una sesión de screen)
@@ -223,7 +223,11 @@ Iniciar el agente en modo cliente (use una sesión de screen)
 consul agent -data-dir=/etc/consul/data -node=agent-two \
     -bind=192.168.56.104 -enable-script-checks=true -config-dir=/etc/consul.d
 ```
-
+Abrir los puertos necesarios en el firewall
+```
+firewall-cmd --zone=public --add-port=8301/tcp --permanent
+firewall-cmd --reload
+```
 Una el cliente al ambiente de descubrimiento de servicio
 ```
 consul join 192.168.56.102
