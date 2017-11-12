@@ -63,9 +63,6 @@ mv /tmp/consul /usr/bin
 mkdir /etc/consul.d
 mkdir -p /etc/consul/data
 ```
-
-Iniciar el microservicio (use una sesión de screen)
-
 Cree un ambiente de nombre microservice_a y de ser necesario actívelo
 ```
 mkvirtualenv microservice_a
@@ -75,6 +72,9 @@ Instale la librería flask en el ambiente, cree y ejectue el script microservice
 ```
 pip install flask
 vi microservice_a.py
+```
+Iniciar el microservicio (use una sesión de screen)
+```
 python microservice_a.py
 ```
 
@@ -175,12 +175,18 @@ mv /tmp/consul /usr/bin
 mkdir /etc/consul.d
 mkdir -p /etc/consul/data
 ```
-
-Iniciar el microservicio (use una sesión de screen)
+Cree un ambiente de nombre microservice_b y de ser necesario actívelo
 ```
+mkvirtualenv microservice_b
 work-on microservice_b
+```
+Instale la librería flask en el ambiente, cree y ejectue el script microservice_a.py
+```
 pip install flask
 vi microservice_b.py
+```
+Iniciar el microservicio (use una sesión de screen)
+```
 python microservice_b.py
 ```
 
