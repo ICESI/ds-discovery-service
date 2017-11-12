@@ -39,6 +39,12 @@ consul agent -server -bootstrap-expect=1 \
     -enable-script-checks=true -config-dir=/etc/consul.d -client 0.0.0.0
 ```
 
+Abrir los puertos necesarios en el firewall
+```
+firewall-cmd --zone=public --add-port=8301/tcp --permanent
+firewall-cmd --reload
+```
+
 Para consultar los miembros del ambiente de descubrimiento de servicio
 ```
 consul members
