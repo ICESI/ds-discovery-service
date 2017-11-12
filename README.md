@@ -42,6 +42,7 @@ consul agent -server -bootstrap-expect=1 \
 Abrir los puertos necesarios en el firewall
 ```
 firewall-cmd --zone=public --add-port=8301/tcp --permanent
+firewall-cmd --zone=public --add-port=8300/tcp --permanent
 firewall-cmd --reload
 ```
 
@@ -82,6 +83,11 @@ vi microservice_a.py
 Iniciar el microservicio (use una sesión de screen)
 ```
 python microservice_a.py
+```
+Abrir los puertos necesarios en el firewall
+```
+firewall-cmd --zone=public --add-port=8080/tcp --permanent
+firewall-cmd --reload
 ```
 
 Crear un archivo de configuración para el microservicio con un  healthcheck
