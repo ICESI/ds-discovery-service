@@ -65,8 +65,14 @@ mkdir -p /etc/consul/data
 ```
 
 Iniciar el microservicio (use una sesión de screen)
+
+Cree un ambiente de nombre microservice_a y de ser necesario actívelo
 ```
+mkvirtualenv microservice_a
 work-on microservice_a
+```
+Instale la librería flask en el ambiente, cree y ejectue el script microservice_a.py
+```
 pip install flask
 vi microservice_a.py
 python microservice_a.py
