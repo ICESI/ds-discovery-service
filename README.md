@@ -102,7 +102,11 @@ Iniciar el agente en modo cliente (use una sesión de screen)
 consul agent -data-dir=/etc/consul/data -node=agent-one \
     -bind=192.168.56.103 -enable-script-checks=true -config-dir=/etc/consul.d
 ```
-
+Abrir los puertos necesarios en el firewall
+```
+firewall-cmd --zone=public --add-port=8301/tcp --permanent
+firewall-cmd --reload
+```
 Una el cliente al ambiente de descubrimiento de servicio
 ```
 consul join 192.168.56.102
