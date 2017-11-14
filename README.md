@@ -155,7 +155,11 @@ Instalar las dependencias necesarias
 # mv /tmp/consul-template /usr/bin
 # mkdir /etc/consul-template
 ```
-
+Abrir los puertos necesarios en el firewall para el balanceador de carga (haproxy)
+```
+# firewall-cmd --zone=public --add-port=5000/tcp --permanent
+# firewall-cmd --reload
+```
 Configurar las plantillas de consul-template
 ```
 # vi /etc/consul-template/haproxy.tpl
@@ -175,6 +179,8 @@ Iniciar el agente de consul-template (use una sesión de screen)
 ```
 # consul-template -consul-addr "192.168.56.102:8500" -template "/etc/consul-template/haproxy.tpl:/etc/haproxy/haproxy.cfg:systemctl restart haproxy"
 ```
+**Nota**: Se recomienda crear un usuario para la ejecución de consul-template. Si realiza esto tenga en cuenta cambiar el propietario
+de los directorios a los que necesita acceder consul-template
 
 ### Comandos Importantes
 | Comando   | Descripción   |
