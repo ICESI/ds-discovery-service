@@ -24,106 +24,122 @@ Se hará uso del aplicativo screen para la ejecución de comandos en background.
 #### Servidor de descubrimiento de servicio
 Instalar las dependencias necesarias
 ```
-yum install -y wget unzip
-wget https://releases.hashicorp.com/consul/1.0.0/consul_1.0.0_linux_amd64.zip -P /tmp
-unzip /tmp/consul_1.0.0_linux_amd64.zip -d /tmp
-mv /tmp/consul /usr/bin
-mkdir /etc/consul.d
-mkdir -p /etc/consul/data
+# yum install -y wget unzip
+# wget https://releases.hashicorp.com/consul/1.0.0/consul_1.0.0_linux_amd64.zip -P /tmp
+# unzip /tmp/consul_1.0.0_linux_amd64.zip -d /tmp
+# mv /tmp/consul /usr/bin
+# mkdir /etc/consul.d
+# mkdir -p /etc/consul/data
 ```
-
+Se recomienda ejecutar el agente de consul como el usuario consul
+```
+# adduser consul
+# passwd consul
+# chown -R consul:consul /etc/consul
+# chown -R consul:consul /etc/consul.d
+```
+Abrir los puertos necesarios en el firewall para el agente de consul
+```
+# firewall-cmd --zone=public --add-port=8301/tcp --permanent
+# firewall-cmd --zone=public --add-port=8300/tcp --permanent
+# firewall-cmd --zone=public --add-port=8500/tcp --permanent
+# firewall-cmd --reload
+```
 Iniciar el agente en modo servidor (use una sesión de screen)
 ```
-consul agent -server -bootstrap-expect=1 \
+# su consul
+$ consul agent -server -bootstrap-expect=1 \
     -data-dir=/etc/consul/data -node=agent-server -bind=192.168.56.102 \
     -enable-script-checks=true -config-dir=/etc/consul.d -client 0.0.0.0
 ```
-
-Abrir los puertos necesarios en el firewall
-```
-firewall-cmd --zone=public --add-port=8301/tcp --permanent
-firewall-cmd --zone=public --add-port=8300/tcp --permanent
-firewall-cmd --zone=public --add-port=8500/tcp --permanent
-firewall-cmd --reload
-```
-
 Para consultar los miembros del ambiente de descubrimiento de servicio
 ```
-consul members
+$ consul members
 ```
-
 Para consultar los nodos/servicios en estado crítico
 ```
-curl http://localhost:8500/v1/health/state/critical
-curl http://192.168.56.102:8500/v1/health/state/critical
+$ curl http://localhost:8500/v1/health/state/critical
+$ curl http://192.168.56.102:8500/v1/health/state/critical
 ```
 
 #### Microservice A
 Instalar las dependencias necesarias
-
 ```
-yum install -y wget unzip
-wget https://bootstrap.pypa.io/get-pip.py -P /tmp
-python /tmp/get-pip.py
-wget https://releases.hashicorp.com/consul/1.0.0/consul_1.0.0_linux_amd64.zip -P /tmp
-unzip /tmp/consul_1.0.0_linux_amd64.zip -d /tmp
-mv /tmp/consul /usr/bin
-mkdir /etc/consul.d
-mkdir -p /etc/consul/data
+# yum install -y wget unzip
+# wget https://bootstrap.pypa.io/get-pip.py -P /tmp
+# python /tmp/get-pip.py
+# wget https://releases.hashicorp.com/consul/1.0.0/consul_1.0.0_linux_amd64.zip -P /tmp
+# unzip /tmp/consul_1.0.0_linux_amd64.zip -d /tmp
+# mv /tmp/consul /usr/bin
+# mkdir /etc/consul.d
+# mkdir -p /etc/consul/data
+```
+Se recomienda ejecutar el agente de consul como el usuario consul
+```
+# adduser consul
+# passwd consul
+# chown -R consul:consul /etc/consul
+# chown -R consul:consul /etc/consul.d
+```
+Abrir los puertos necesarios en el firewall para el agente de consul
+```
+# firewall-cmd --zone=public --add-port=8301/tcp --permanent
+# firewall-cmd --reload
+```
+Abrir los puertos necesarios en el firewall que se requieren para acceder al microservicio
+```
+# firewall-cmd --zone=public --add-port=8080/tcp --permanent
+# firewall-cmd --reload
+```
+Cree un usuario microservices para ejecutar el servicio
+```
+# adduser microservices
+# passwd microservices
 ```
 Cree un ambiente de nombre microservice_a y de ser necesario actívelo
 ```
-mkvirtualenv microservice_a
-work-on microservice_a
+# su microservices
+$ mkvirtualenv microservice_a
+$ work-on microservice_a
 ```
 Instale la librería flask en el ambiente, cree y ejectue el script microservice_a.py
 ```
-pip install flask
-vi microservice_a.py
+$ pip install flask
+$ vi microservice_a.py
 ```
 Iniciar el microservicio (use una sesión de screen)
 ```
-python microservice_a.py
+$ python microservice_a.py
 ```
-Abrir los puertos necesarios en el firewall
-```
-firewall-cmd --zone=public --add-port=8080/tcp --permanent
-firewall-cmd --reload
-```
-
 Crear un archivo de configuración para el microservicio con un  healthcheck
 ```
-echo '{"service": {"name": "microservice-a", "tags": ["flask"], "port": 8080,
+# su consul
+$ echo '{"service": {"name": "microservice-a", "tags": ["flask"], "port": 8080,
   "check": {"script": "curl localhost:8080/health >/dev/null 2>&1", "interval": "10s"}}}' >/etc/consul.d/microservice-a.json
 ```
 
 Iniciar el agente en modo cliente (use una sesión de screen)
 ```
-consul agent -data-dir=/etc/consul/data -node=agent-one \
+# su consul
+$ consul agent -data-dir=/etc/consul/data -node=agent-one \
     -bind=192.168.56.103 -enable-script-checks=true -config-dir=/etc/consul.d
-```
-Abrir los puertos necesarios en el firewall
-```
-firewall-cmd --zone=public --add-port=8301/tcp --permanent
-firewall-cmd --reload
 ```
 Una el cliente al ambiente de descubrimiento de servicio
 ```
-consul join 192.168.56.102
+$ consul join 192.168.56.102
 ```
-
 Verifique la lista de miembros del ambiente
 ```
-consul members
+$ consul members
 ```
 
 #### Balanceador de carga
 Desde el balanceador puede realizar consulta al servidor de descubrimiento de servicio
 ```
-curl http://192.168.56.102:8500/v1/health/state/critical
-curl http://192.168.56.102:8500/v1/catalog/services
-curl http://192.168.56.102:8500/v1/catalog/service/microservice_a
-http://192.168.56.102:8500/v1/catalog/service/microservice_b
+# curl http://192.168.56.102:8500/v1/health/state/critical
+# curl http://192.168.56.102:8500/v1/catalog/services
+# curl http://192.168.56.102:8500/v1/catalog/service/microservice_a
+# curl http://192.168.56.102:8500/v1/catalog/service/microservice_b
 ```
 
 Ejemplos de respuesta
@@ -133,31 +149,31 @@ Ejemplos de respuesta
 
 Instalar las dependencias necesarias
 ```
-yum install -y wget haproxy unzip
-wget https://releases.hashicorp.com/consul-template/0.19.4/consul-template_0.19.4_linux_amd64.zip -P /tmp
-unzip /tmp/consul-template_0.19.4_linux_amd64.zip -d /tmp
-mv /tmp/consul-template /usr/bin
-mkdir /etc/consul-template
+# yum install -y wget haproxy unzip
+# wget https://releases.hashicorp.com/consul-template/0.19.4/consul-template_0.19.4_linux_amd64.zip -P /tmp
+# unzip /tmp/consul-template_0.19.4_linux_amd64.zip -d /tmp
+# mv /tmp/consul-template /usr/bin
+# mkdir /etc/consul-template
 ```
 
 Configurar las plantillas de consul-template
 ```
-vi /etc/consul-template/haproxy.tpl
+# vi /etc/consul-template/haproxy.tpl
 ```
 
 Realice una prueba generando una vez el archivo de configuración a partir de la plantilla de formato tpl
 ```
-consul-template -consul-addr "192.168.56.102:8500" -template "/etc/consul-template/haproxy.tpl:/etc/haproxy/haproxy.cfg" -once
+# consul-template -consul-addr "192.168.56.102:8500" -template "/etc/consul-template/haproxy.tpl:/etc/haproxy/haproxy.cfg" -once
 ```
 
 Verifique que el archivo de configuración ha sido generado correctamente:
 ```
-cat /etc/haproxy.cfg
+# cat /etc/haproxy.cfg
 ```
 
 Iniciar el agente de consul-template (use una sesión de screen)
 ```
-consul-template -consul-addr "192.168.56.102:8500" -template "/etc/consul-template/haproxy.tpl:/etc/haproxy/haproxy.cfg:systemctl restart haproxy"
+# consul-template -consul-addr "192.168.56.102:8500" -template "/etc/consul-template/haproxy.tpl:/etc/haproxy/haproxy.cfg:systemctl restart haproxy"
 ```
 
 ### Comandos Importantes
@@ -183,59 +199,65 @@ consul-template -consul-addr "192.168.56.102:8500" -template "/etc/consul-templa
 Instalar las dependencias necesarias
 
 ```
-yum install -y wget unzip
-wget https://bootstrap.pypa.io/get-pip.py -P /tmp
-python /tmp/get-pip.py
-wget https://releases.hashicorp.com/consul/1.0.0/consul_1.0.0_linux_amd64.zip -P /tmp
-unzip /tmp/consul_1.0.0_linux_amd64.zip -d /tmp
-mv /tmp/consul /usr/bin
-mkdir /etc/consul.d
-mkdir -p /etc/consul/data
+# yum install -y wget unzip
+# wget https://bootstrap.pypa.io/get-pip.py -P /tmp
+# python /tmp/get-pip.py
+# wget https://releases.hashicorp.com/consul/1.0.0/consul_1.0.0_linux_amd64.zip -P /tmp
+# unzip /tmp/consul_1.0.0_linux_amd64.zip -d /tmp
+# mv /tmp/consul /usr/bin
+# mkdir /etc/consul.d
+# mkdir -p /etc/consul/data
+```
+Abrir los puertos necesarios en el firewall para el agente de consul
+```
+# firewall-cmd --zone=public --add-port=8301/tcp --permanent
+# firewall-cmd --reload
+```
+Abrir los puertos necesarios en el firewall que se requieren para acceder al microservicio
+```
+# firewall-cmd --zone=public --add-port=8080/tcp --permanent
+# firewall-cmd --reload
+```
+Cree un usuario microservices para ejecutar el servicio
+```
+# adduser microservices
+# passwd microservices
 ```
 Cree un ambiente de nombre microservice_b y de ser necesario actívelo
 ```
-mkvirtualenv microservice_b
-work-on microservice_b
+# su microservices
+$ mkvirtualenv microservice_b
+$ work-on microservice_b
 ```
 Instale la librería flask en el ambiente, cree y ejectue el script microservice_a.py
 ```
-pip install flask
-vi microservice_b.py
+$ pip install flask
+$ vi microservice_b.py
 ```
 Iniciar el microservicio (use una sesión de screen)
 ```
-python microservice_b.py
+$ python microservice_b.py
 ```
-Abrir los puertos necesarios en el firewall
-```
-firewall-cmd --zone=public --add-port=8080/tcp --permanent
-firewall-cmd --reload
-```
-
 Crear un archivo de configuración para el microservicio con un  healthcheck
 ```
-echo '{"service": {"name": "microservice-b", "tags": ["flask"], "port": 8080,
+# su consul
+$ echo '{"service": {"name": "microservice-b", "tags": ["flask"], "port": 8080,
   "check": {"script": "curl localhost/health:8080 >/dev/null 2>&1", "interval": "10s"}}}' >/etc/consul.d/microservice-b.json
 ```
-
 Iniciar el agente en modo cliente (use una sesión de screen)
 ```
-consul agent -data-dir=/etc/consul/data -node=agent-two \
+# su consul
+$ consul agent -data-dir=/etc/consul/data -node=agent-two \
     -bind=192.168.56.104 -enable-script-checks=true -config-dir=/etc/consul.d
-```
-Abrir los puertos necesarios en el firewall
-```
-firewall-cmd --zone=public --add-port=8301/tcp --permanent
-firewall-cmd --reload
 ```
 Una el cliente al ambiente de descubrimiento de servicio
 ```
-consul join 192.168.56.102
+$ consul join 192.168.56.102
 ```
 
 Verifique la lista de miembros del ambiente
 ```
-consul members
+$ consul members
 ```
 
 ### Referencias
