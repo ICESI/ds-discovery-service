@@ -79,5 +79,5 @@ backend static
 #---------------------------------------------------------------------
 backend app
     balance     roundrobin
-	  {{ range service "microservice_a" }}
+	  {{ range service "microservice-a" }}
 	  server {{ .Name }} {{ .Address }}:{{ .Port }} check {{ end }}
