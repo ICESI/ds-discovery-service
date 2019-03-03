@@ -91,7 +91,7 @@ Abrir los puertos necesarios en el firewall que se requieren para acceder al mic
 # firewall-cmd --zone=public --add-port=8080/tcp --permanent
 # firewall-cmd --reload
 ```
-Cree un usuario microservices para ejecutar el servicio
+Cree un usuario microservices para ejecutar el servicio 
 ```
 # adduser microservices
 # passwd microservices
@@ -138,8 +138,8 @@ Desde el balanceador puede realizar consulta al servidor de descubrimiento de se
 ```
 # curl http://192.168.56.102:8500/v1/health/state/critical
 # curl http://192.168.56.102:8500/v1/catalog/services
-# curl http://192.168.56.102:8500/v1/catalog/service/microservice_a
-# curl http://192.168.56.102:8500/v1/catalog/service/microservice_b
+# curl http://192.168.56.102:8500/v1/catalog/service/microservice-a
+# curl http://192.168.56.102:8500/v1/catalog/service/microservice-b
 ```
 
 Ejemplos de respuesta
@@ -235,7 +235,7 @@ Cree un ambiente de nombre microservice_b y de ser necesario actívelo
 $ mkvirtualenv microservice_b
 $ work-on microservice_b
 ```
-Instale la librería flask en el ambiente, cree y ejectue el script microservice_a.py
+Instale la librería flask en el ambiente, cree y ejectue el script microservice_b.py
 ```
 $ pip install flask
 $ vi microservice_b.py
